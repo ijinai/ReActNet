@@ -172,7 +172,7 @@ class reactnet(nn.Module):
         for i in range(len(stage_out_channel)):
             if i == 0:
                 self.feature.append(firstconv3x3(3, stage_out_channel[i], 2))
-            elif stage_out_channel[i-1] != stage_out_channel[i] and stage_out_channel[i] != 64:
+            elif stage_out_channel[i-1] != stage_out_channel[i] and stage_out_channel[i] != 64 and stage_out_channel[i] != 512:
                 self.feature.append(BasicBlock(stage_out_channel[i-1], stage_out_channel[i], 2))
             else:
                 self.feature.append(BasicBlock(stage_out_channel[i-1], stage_out_channel[i], 1))
