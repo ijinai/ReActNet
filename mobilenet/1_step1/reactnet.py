@@ -151,6 +151,7 @@ class reactnet(nn.Module):
     def forward(self, x):
         for i, block in enumerate(self.feature):
             x = block(x)
+            #print(x.shape)
 
         x = self.pool1(x)
         x = x.view(x.size(0), -1)
@@ -158,8 +159,29 @@ class reactnet(nn.Module):
 
         return x
 
+if __name__=='__main__':
+    from torch.profiler import profile, record_function, ProfilerActivity, schedule
+    profile_schedule = schedule(
+        skip_first=1,
+        wait=1,
+        warmup=1,
+        active=3
+    )
+    def trace_handler(p):
+        output = p.key_averages().table(sort_by="self_cpu_time_total", row_limit=10)
+        print(output)
+        p.export_chrome_trace("./trace.json")
 
-
-
-
-
+    inputs = torch.randn(256, 3, 224, 224).cuda()
+    model = reactnet()
+    model = torch.nn.DataParallel(model).cuda()
+    with profile(activities=[
+        ProfilerActivity.CPU, ProfilerActivity.CUDA], 
+        schedule=profile_schedule,
+        on_trace_ready=trace_handler,
+        profile_memory=True, record_shapes=True) as prof:
+        for idx in range(6):
+            model(inputs)
+            prof.step()
+            
+    #print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
