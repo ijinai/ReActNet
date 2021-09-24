@@ -145,6 +145,7 @@ def main():
 
     # train the model
     epoch = start_epoch
+    valid_obj, valid_top1_acc, valid_top5_acc = validate(0, val_loader, model_student, criterion, args)
     while epoch < args.epochs:
         train_obj, train_top1_acc,  train_top5_acc = train(epoch,  train_loader, model_student, model_teacher, criterion_kd, optimizer, scheduler)
         valid_obj, valid_top1_acc, valid_top5_acc = validate(epoch, val_loader, model_student, criterion, args)
